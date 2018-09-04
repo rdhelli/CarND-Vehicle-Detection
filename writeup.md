@@ -47,26 +47,32 @@ The goals / steps of this project are the following:
 ---
 ### 1 Writeup / README
 
-#### 1.1 Provide a Writeup / README that includes all the rubric points and how you addressed each one.  You can submit your writeup as markdown or pdf.  [Here](https://github.com/udacity/CarND-Vehicle-Detection/blob/master/writeup_template.md) is a template writeup for this project you can use as a guide and a starting point.  
+#### 1.1 Provide a Writeup / README that includes all the rubric points and how you addressed each one. 
 
 You're reading it!
 
 ### 2 Histogram of Oriented Gradients (HOG)
 
-Solarized dark             |  Solarized Ocean
+#### 2.1 Explain how (and identify where in your code) you extracted HOG features from the training images.
+
+The defined functions for this step are contained in lines #15 through #122 of the file called `utils.py`, from where they are called in the main file, `project.py` in the function `find_cars()` in lines #123 through #180
+
+The process is started by reading in all the `vehicle` and `non-vehicle` images. Here some additional images are presented (with higher resolution) to better demonstrate the pipeline. Here are two examples of what kind of images can be found in the two classes. These images are grouped into the respective lists of titles.
+
+Car image                  |  Not car image
 :-------------------------:|:-------------------------:
 ![image1]                  |  ![image2]
 
-#### 2.1 Explain how (and identify where in your code) you extracted HOG features from the training images.
+To explore the various color spaces, I used 3d point cloud generator function `plot3d()` provided in Lesson 23 / 15. Explore Color Spaces. I have tested full images with both vehicle and non-vehicle regions, and also cropped versions, to get a feel for the possibilities.
 
-The code for this step is contained in the first code cell of the IPython notebook (or in lines # through # of the file called `some_file.py`).  
+Here is an example of the different channels of the YUV color space.
 
-I started by reading in all the `vehicle` and `non-vehicle` images.  Here is an example of one of each of the `vehicle` and `non-vehicle` classes:
+Car image                  |  Not car image
+:-------------------------:|:-------------------------:
+![image9]                  |  ![image10]
+![image13]                 |  ![image14]
+![image17]                 |  ![image18]
 
-![alt text][image1]
-![alt text][image2]
-
-I then explored different color spaces and different `skimage.hog()` parameters (`orientations`, `pixels_per_cell`, and `cells_per_block`).  I grabbed random images from each of the two classes and displayed them to get a feel for what the `skimage.hog()` output looks like.
 
 Here is an example using the `YCrCb` color space and HOG parameters of `orientations=8`, `pixels_per_cell=(8, 8)` and `cells_per_block=(2, 2)`:
 
