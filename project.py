@@ -7,6 +7,7 @@ import pandas as pd
 import glob
 import os
 import cv2
+import random
 import pickle
 from scipy.ndimage.measurements import label
 from moviepy.editor import VideoFileClip
@@ -27,6 +28,11 @@ notcars.extend(glob.glob('./data/non-vehicles/Extras/*.png'))
 notcars.extend(glob.glob('./data/non-vehicles/GTI/*.png'))
 print('Input data directories prepared...')
 sample_size = None
+
+car_example = cv2.resize(mpimg.imread('./test_images/car.jpg'), (128, 128))
+notcar_example = cv2.resize(mpimg.imread('./test_images/notcar.jpg'), (128, 128))
+plt.imsave('./output_images/0_0_car_example.jpg', car_example)
+plt.imsave('./output_images/1_0_notcar_example.jpg', notcar_example)
 
 # Training exploration for parameter searching (True/False)
 explore = False
@@ -83,7 +89,7 @@ pix_per_cell = 16
 cell_per_block = 4
 hog_channel = 'ALL'  # Can be 0, 1, 2, or "ALL"
 print('Input parameters:', '\nclf type:', clf_type, '\nspatial_size:', spatial_size, '\nhist_bins:',
-      hist_bins, '\n cspace:', cspace, '\ncspace2:', cspace2, '\norient:', orient, '\npix_per_cell:',
+      hist_bins, '\ncspace:', cspace, '\ncspace2:', cspace2, '\norient:', orient, '\npix_per_cell:',
       pix_per_cell, '\ncell_per_block:', cell_per_block, '\nhog_channel:', hog_channel)
 
 # Try to load previously saved model (True) or train a new one (False)
@@ -93,7 +99,7 @@ if load_model and os.path.isfile('clf.pickle'):
         model = pickle.load(handle)
         clf = model['clf']
         X_scaler = model['X_scaler']
-    print('saved clf model loaded from pickle file')
+    print('loaded previously saved clf model from pickle file')
 else:
     clf, X_scaler, feat_shape, accuracy, time_extract, time_train, time_predict = \
         train_classifier(cars, notcars, sample_size, clf_type, spatial_size, hist_bins,
@@ -201,13 +207,28 @@ multiscale = [[400, 464, 1.0],  # ystart, ystop, scale
               [400, 596, 3.5],
               [464, 660, 3.5]]
 
+for i, img in enumerate([car_example, notcar_example]):
+    plt.imsave(r"./output_images/" + str(i) + "_1_spatial.jpg",
+               cv2.resize(cv2.resize(img, spatial_size), (128, 128)))
+    img2 = convert_color(img, cspace=cspace)
+    ch1 = img2[:, :, 0]
+    ch2 = img2[:, :, 1]
+    ch3 = img2[:, :, 2]
+    plt.imsave(r"./output_images/" + str(i) + "_2_ch1.jpg", ch1, cmap='gray')
+    plt.imsave(r"./output_images/" + str(i) + "_2_ch2.jpg", ch2, cmap='gray')
+    plt.imsave(r"./output_images/" + str(i) + "_2_ch3.jpg", ch3, cmap='gray')
+    hog_feats, hog_im = get_hog_features(img, orient, pix_per_cell, cell_per_block,
+                     vis=True, feature_vec=True)
+    plt.imsave(r"./output_images/" + str(i) + "_3_hog.jpg", hog_im, cmap='gray')
+
+
 for fname in images:
     print('processing ', fname, '...')
     img = mpimg.imread(fname)
     boxes = find_cars_multiscale(img, multiscale, clf, X_scaler, cspace, spatial_size,
                                  hist_bins, orient, pix_per_cell, cell_per_block, hog_channel)
     out_img = draw_boxes(img, boxes)
-    plt.imsave(r"./output_images/" + fname.split('\\')[-1].split('.')[0] + "_1_bbox.jpg", out_img)
+    plt.imsave(r"./output_images/" + fname.split('\\')[-1].split('.')[0] + "_5_bbox.jpg", out_img)
     heat = np.zeros_like(img[:, :, 0]).astype(np.float)
     # Add heat to each box in box list
     heat = add_heat(heat, boxes)
@@ -224,7 +245,7 @@ for fname in images:
     draw_img = draw_labeled_bboxes(np.copy(img), labels)
     # Insert heatmap image overlay
     draw_img[50:50+180, 50:50+320] = heatmap_small
-    plt.imsave(r"./output_images/" + fname.split('\\')[-1].split('.')[0] + "_2_heat.jpg", draw_img)
+    plt.imsave(r"./output_images/" + fname.split('\\')[-1].split('.')[0] + "_6_heat.jpg", draw_img)
 
 
 # class to contain last n batch of boxes
