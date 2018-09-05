@@ -38,7 +38,7 @@ The goals / steps of this project are the following:
 [image22]: ./output_images/1_3_hog.jpg
 [image23]: ./output_images/test3_6_heat.jpg
 [image24]: ./output_images/test6_6_heat.jpg
-[image25]: ./output_images/Capture.png
+[image25]: ./output_images/capture.jpg
 [video1]: ./output.mp4
 [video2]: ./combined_output.mp4
 
