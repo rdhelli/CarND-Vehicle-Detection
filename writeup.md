@@ -114,69 +114,69 @@ The function can be found at line #30 in `utils.py`, based on the respective ski
 
 `hog_channel` - which color channels shall be used to extract HOG features from, selected from: All, 1, 2 or 3
 
-#### 2.1.4 Classifier type
-
-As an experiment, I was curious about the performance of the other types of classifiers that we learnt about, so I have made the classifier type customizable. Besides changing the C parameter of the Support Vector Machine, I have tried out a Decision Tree, a Naive Bayes classifier and a Neural Network (or Multi-layer Perceptron) as well. My finding was that the NN type proved superior over the others in accuracy and performance.
-
 #### 2.2 Explain how you settled on your final choice of HOG parameters.
 
-I tried various combinations of parameters and...
+First, I have made it possible, that several classifiers can be trained in one run, based on a parameter table stored as a .csv file, called `test_parameters.csv`. After I have found an acceptable default value for all of the parameters, I started using a method similar to the gradient descent method, as in, comparing the results when only changing one parameter at a time (similarly to partial derivatives).
+
+One problem worth mentioning was the trade-off between accuracy and extraction/training/classification time needs. A main goal was to keep it computationally effective, to be able to reach real-time operation. Some key observations:
+
+- YUV and YCrCb are both good options, with all three channels
+- HLS and HSV are worth considering, especially that HSV stays reasonably good with a single channel
+- increasing `pix_per_cell` to 16 greatly increases speed without losing much accuracy
+- `spatial_size` is still useful down to 16×16 resolution
+- decreasing C parameter of SVC-s helps, but NN type classifiers are generally better
 
 ![image25]
 
-| Unnamed: 0 | clf_type    | spatial_size | hist_bins | cspace | orient | pix_per_cell | cell_per_block | hog_channel | feat_shape_spat | feat_shape_chist | feat_shape_hog | sum_feat_shape | accuracy | time_extract | time_train | time_predict | 
-|------------|-------------|--------------|-----------|--------|--------|--------------|----------------|-------------|-----------------|------------------|----------------|----------------|----------|--------------|------------|--------------| 
-| 0          | nn          | 16           | 32        | RGB    | 9      | 16           | 4              | ALL         | 768             | 96               | 432            | 1296           | 0.989    | 43.64        | 7.46       | 0.0015       | 
-| 1          | nn          | 16           | 32        | HSV    | 9      | 16           | 4              | ALL         | 768             | 96               | 432            | 1296           | 0.9969   | 44.88        | 4.18       | 0.002        | 
-| 2          | nn          | 16           | 32        | LUV    | 9      | 16           | 4              | ALL         | 768             | 96               | 432            | 1296           | 0.9856   | 43.47        | 5.24       | 0.001        | 
-| 3          | nn          | 16           | 32        | HLS    | 9      | 16           | 4              | ALL         | 768             | 96               | 432            | 1296           | 0.9941   | 43.87        | 7.49       | 0.001        | 
-| 4          | nn          | 16           | 32        | YUV    | 9      | 16           | 4              | ALL         | 768             | 96               | 432            | 1296           | 0.9932   | 43.93        | 4.27       | 0.002        | 
-| 5          | nn          | 16           | 32        | YCrCb  | 9      | 16           | 4              | ALL         | 768             | 96               | 432            | 1296           | 0.9958   | 42.35        | 4.76       | 0.002        | 
-| 6          | nn          | 16           | 32        | YUV    | 9      | 16           | 4              | ALL         | 768             | 96               | 432            | 1296           | 0.9944   | 43.91        | 7.39       | 0.002        | 
-| 7          | nn          | 16           | 32        | YUV    | 9      | 16           | 4              | 0           | 768             | 96               | 144            | 1008           | 0.9921   | 28.14        | 7.73       | 0.001        | 
-| 8          | nn          | 16           | 32        | YUV    | 9      | 16           | 4              | 1           | 768             | 96               | 144            | 1008           | 0.9834   | 26.4         | 7.96       | 0.0013       | 
-| 9          | nn          | 16           | 32        | YUV    | 9      | 16           | 4              | 2           | 768             | 96               | 144            | 1008           | 0.9856   | 24.03        | 5.17       | 0.001        | 
-| 10         | nn          | 16           | 32        | YUV    | 9      | 8            | 2              | ALL         | 768             | 96               | 5292           | 6156           | 0.9935   | 104.85       | 36.59      | 0.0075       | 
-| 11         | nn          | 16           | 32        | YUV    | 9      | 16           | 2              | ALL         | 768             | 96               | 972            | 1836           | 0.9896   | 98.16        | 13.02      | 0.003        | 
-| 12         | nn          | 16           | 32        | YUV    | 9      | 32           | 2              | ALL         | 768             | 96               | 108            | 972            | 0.9924   | 77.39        | 7.35       | 0.001        | 
-| 13         | nn          | 16           | 32        | YUV    | 9      | 16           | 4              | ALL         | 768             | 96               | 432            | 1296           | 0.9941   | 55.03        | 11.73      | 0.001        | 
-| 14         | nn          | 24           | 32        | YUV    | 9      | 16           | 4              | ALL         | 1728            | 96               | 432            | 2256           | 0.9941   | 48.86        | 13.53      | 0.003        | 
-| 15         | nn          | 32           | 32        | YUV    | 9      | 16           | 4              | ALL         | 3072            | 96               | 432            | 3600           | 0.9885   | 135.23       | 26.69      | 0.0066       | 
-| 16         | nn          | 16           | 32        | YUV    | 6      | 16           | 4              | ALL         | 768             | 96               | 288            | 1152           | 0.9904   | 40.32        | 5.96       | 0.002        | 
-| 17         | nn          | 16           | 32        | YUV    | 9      | 16           | 4              | ALL         | 768             | 96               | 432            | 1296           | 0.9924   | 44.5         | 6.21       | 0.001        | 
-| 18         | nn          | 16           | 32        | YUV    | 12     | 16           | 4              | ALL         | 768             | 96               | 576            | 1440           | 0.9918   | 47.45        | 10.48      | 0.002        | 
-| 19         | nn          | 16           | 32        | YUV    | 9      | 16           | 2              | ALL         | 768             | 96               | 972            | 1836           | 0.9944   | 52.7         | 9.16       | 0.003        | 
-| 20         | nn          | 16           | 32        | YUV    | 9      | 16           | 3              | ALL         | 768             | 96               | 972            | 1836           | 0.9935   | 48.8         | 9.78       | 0.003        | 
-| 21         | nn          | 16           | 32        | YUV    | 9      | 16           | 4              | ALL         | 768             | 96               | 432            | 1296           | 0.9893   | 45.1         | 4.11       | 0.001        | 
-| 22         | nn          | 16           | 16        | YUV    | 9      | 16           | 4              | ALL         | 768             | 48               | 432            | 1248           | 0.9924   | 43.19        | 4.08       | 0.002        | 
-| 23         | nn          | 16           | 24        | YUV    | 9      | 16           | 4              | ALL         | 768             | 72               | 432            | 1272           | 0.9955   | 42.01        | 5.96       | 0.001        | 
-| 24         | nn          | 16           | 32        | YUV    | 9      | 16           | 4              | ALL         | 768             | 96               | 432            | 1296           | 0.9955   | 41.44        | 7.12       | 0.001        | 
-| 25         | svc_c_high  | 16           | 32        | YUV    | 9      | 16           | 4              | ALL         | 768             | 96               | 432            | 1296           | 0.9797   | 43.73        | 22.27      | 0.1114       | 
-| 26         | svc_c_med   | 16           | 32        | YUV    | 9      | 16           | 4              | ALL         | 768             | 96               | 432            | 1296           | 0.9862   | 44.64        | 23.77      | 0.1208       | 
-| 27         | svc_c_low   | 16           | 32        | YUV    | 9      | 16           | 4              | ALL         | 768             | 96               | 432            | 1296           | 0.9899   | 44.36        | 32.71      | 0.2005       | 
-| 28         | tree        | 16           | 32        | YUV    | 9      | 16           | 4              | ALL         | 768             | 96               | 432            | 1296           | 0.9372   | 40.8         | 38.93      | 0.001        | 
-| 29         | nn          | 16           | 32        | YUV    | 9      | 16           | 4              | ALL         | 768             | 96               | 432            | 1296           | 0.9907   | 41.29        | 6.53       | 0.002        | 
-| 30         | naive_bayes | 16           | 32        | YUV    | 9      | 16           | 4              | ALL         | 768             | 96               | 432            | 1296           | 0.9262   | 41.52        | 0.33       | 0.0025       | 
-
-
-
 #### 2.3 Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
 
-I trained a linear SVM using...
+#### 2.3.1 Classifier type
+
+As an experiment, I was curious about the performance of the other types of classifiers that we learnt about, so I have made the classifier type customizable. Besides changing the C parameter of the Support Vector Machine, I have tried out a Decision Tree, a Naive Bayes classifier and a Neural Network (or Multi-layer Perceptron) as well. My finding was that the NN type proved superior over the others in accuracy and performance. The relevant code can be found at line #215, in `utils.py`.
+
+#### 2.3.2 Training
+
+After the above described features have been extracted (line #222-230 in `utils.py`), training data and 0/1 labels are generated for the vehicle/non-vehicle features. The data is randomly split in 80-20% to support testing on independent data. The `StandardScaler()` from sklearn was used to normalize the training and test data. Then the built-in, generally available `fit()` method was used to train the classifier on the training data. The accuracy values are calculated from the predictions on the test data. The relevant code can be found at lines #232 through #273. Accuracy values of up to 99.5% were reached.
 
 ### 3 Sliding Window Search
 
 #### 3.1 Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
 
-I decided to search random window positions at random scales all over the image and came up with this (ok just kidding I didn't actually ;):
+I have applied the HOG sub-sampling method due to its increase in processing speed. Instead of calculating HOG for every block, it needs to be calculated only once, lines #126 through #151 in `project.py`. The spatial and color histogram features are calculated as the window is sliding over the selected region, lines #170 and #171 in `project.py`.
 
-![alt text][image3]
+As for the scales, it needed some experimentation as too many scales increased the number of false positives and considerably increased processing time, but not applying enough scales resulted in the disappearing of bounding boxes over specific regions. In general, I aimed at following the rule of perspective transformation. As in, determining the necessary sizes at the closest and farthest positions and then interpolating and experimenting in between.
+
+Multiscale values |
+:----------------:|
+[400, 464, 1.0]   |
+[416, 480, 1.0]   |
+[400, 480, 1.25]  |
+[424, 504, 1.25]  |
+[400, 496, 1.5]   |
+[432, 528, 1.5]   |
+[400, 512, 1.75]  |
+[432, 544, 1.75]  |
+[400, 528, 2.0]   |
+[432, 560, 2.0]   |
+[400, 596, 3.5]   |
+[464, 660, 3.5]   |
 
 #### 3.2 Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
 
-Ultimately I searched on two scales using YCrCb 3-channel HOG features plus spatially binned color and histograms of color in the feature vector, which provided a nice result.  Here are some example images:
+Apart from tuning the parameters, I have applied a heatmap and a filtering based on the principle that false positives mostly come alone, while true detection boxes overlap for the most part. I have overlayed these heatmap images on the originals as a demonstration, and used the "hot" areas to finalize the estimated bounding boxes per vehicle.
 
-![alt text][image4]
+![image3] ![image7]
+
+![image11] ![image15]
+
+![image19] ![image23]
+
+![image4] ![image8]
+
+![image12] ![image16]
+
+![image20] ![image24]
+
 ---
 
 ### 4 Video Implementation
