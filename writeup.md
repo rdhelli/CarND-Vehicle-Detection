@@ -202,7 +202,7 @@ When putting together the processing of the video images, I was able to also app
 
 #### 5.1 Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-One of the issues I met, was that some color spaces were more prone to false detections. When I had a working pipeline it was surprising to see such a change, even though it was not reflected in the training data.
+One of the issues I met, was that some color spaces were more prone to false detections. When I had a working pipeline it was surprising to see such a change, even though it was not reflected in the accuracy results.
 
 Similarly to the road curvature calculations, it would be possible to estimate the relative vehicle positions (and hence the relative speeds) and plot them on the processed video image, but there are a bit too many areas where approximations were made. Therefore, they would add up to a significant error which would make this data difficult to put into use.
 
