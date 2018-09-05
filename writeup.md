@@ -165,43 +165,36 @@ Multiscale values |
 
 Apart from tuning the parameters, I have applied a heatmap and a filtering based on the principle that false positives mostly come alone, while true detection boxes overlap for the most part. I have overlayed these heatmap images on the originals as a demonstration, and used the "hot" areas to finalize the estimated bounding boxes per vehicle.
 
-![image3] ![image7]
-
-![image11] ![image15]
-
-![image19] ![image23]
-
-![image4] ![image8]
-
-![image12] ![image16]
-
-![image20] ![image24]
+Detected bounding boxes    |  Heat-based filtering
+:-------------------------:|:-------------------------:
+![image3]                  | ![image7]
+![image11]                 | ![image15]
+![image19]                 | ![image23]
+![image4]                  | ![image8]
+![image12]                 | ![image16]
+![image20]                 | ![image24]
 
 ---
 
 ### 4 Video Implementation
 
 #### 4.1 Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (somewhat wobbly or unstable bounding boxes are ok as long as you are identifying the vehicles most of the time with minimal false positives.)
-Here's a [link to my video result](./project_video.mp4)
 
+Here is a [link to my video result](./output.mp4)
+
+![video1]
+
+I have also taken the next step and combined the vehicle detection project with the advanced line finding project to form a more comprehensive detection pipeline.
+
+Here is a [link to the combined result](./output_combined.mp4)
+
+![video2]
 
 #### 4.2 Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
 
-I recorded the positions of positive detections in each frame of the video.  From the positive detections I created a heatmap and then thresholded that map to identify vehicle positions.  I then used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap.  I then assumed each blob corresponded to a vehicle.  I constructed bounding boxes to cover the area of each blob detected.  
+I recorded the positions of positive detections in each frame of the video.  From the positive detections I created a heatmap and then thresholded that map to identify vehicle positions.  I then used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap.  I then assumed each blob corresponded to a vehicle.  I constructed bounding boxes to cover the area of each blob detected. The relevant code can be found at lines #271 through #280 in `project.py`. 
 
-Here's an example result showing the heatmap from a series of frames of video, the result of `scipy.ndimage.measurements.label()` and the bounding boxes then overlaid on the last frame of video:
-
-### Here are six frames and their corresponding heatmaps:
-
-![alt text][image5]
-
-### Here is the output of `scipy.ndimage.measurements.label()` on the integrated heatmap from all six frames:
-![alt text][image6]
-
-### Here the resulting bounding boxes are drawn onto the last frame in the series:
-![alt text][image7]
-
-
+When putting together the processing of the video images, I was able to also apply a memory effect with the `Box_mem()` class, which can be found in line #252 in `project.py`. It has proved particularly useful to stabilize the detections and filter out the false positives.
 
 ---
 
@@ -209,5 +202,10 @@ Here's an example result showing the heatmap from a series of frames of video, t
 
 #### 5.1 Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+One of the issues I met, was that some color spaces were more prone to false detections. When I had a working pipeline it was surprising to see such a change, even though it was not reflected in the training data.
 
+Similarly to the road curvature calculations, it would be possible to estimate the relative vehicle positions (and hence the relative speeds) and plot them on the processed video image, but there are a bit too many areas where approximations were made. Therefore, they would add up to a significant error which would make this data difficult to put into use.
+
+Another idea is to implement a check, whether a vehicle bounding box is in the Ego vehicle's lane ahead, to provide information about the freedom and constraints of the longitudinal vehicle control.
+
+Finally, the biggest advancement to this project could be to apply a Deep Neural Network, to recognize the features on its own. 
